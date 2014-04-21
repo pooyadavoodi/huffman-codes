@@ -4,6 +4,7 @@
 #include <queue>
 #include <vector>
 #include "binary-tree.h"
+#include <iostream>
 
 template <class T> class pqueue;
 
@@ -47,6 +48,7 @@ class pqueue
         void push(int, binary_tree_node<T> *);
         pq_node<T> toppop();
         bool isEmpty() const;
+        size_t size() const;
 };
 
 #endif

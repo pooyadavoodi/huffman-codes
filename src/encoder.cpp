@@ -5,35 +5,54 @@ using namespace std;
 
 encoder::encoder() {}
 
-void encoder::compress(const string infilename)
+int streamSize(const string & infilename)
 {
     ifstream infile(infilename);
     if(!infile)
     {
         cerr<<"Error in openning file\n";
-        return;
+        return -1;
     }
+    streampos fbegin = infile.tellg();
+    infile.seekg(0, ios::end);
+    streampos fend = infile.tellg();
+    infile.close();
+    return fend - fbegin;
+}
 
-    string outfilename(infilename+".zip");
+
+void encoder::compress(const string infilename)
+{
+    file_content outfile_content;
 	unordered_map<char,int> freq_ht;
     binary_tree<char> huffman_tree;
 	unordered_map<char,string> codes_ht;
-    string encoded_file; //each bit is stored in a char - output converts them to bits and outputs them
-    pair<string,string> encoded_huffman_tree_plus_leaves; //each bit of the structure encoding is stored in a char - output converts them to bits and outputs them - leaves of huffman tree from left to right, each leaf is a char
 
-	freq_ht = gen_freq(infile);
+	freq_ht = gen_freq(infilename);
     huffman_tree.setRoot(build_huffman_tree(freq_ht));
 	codes_ht = gen_codes(huffman_tree);
-	encoded_file = encode_input_file(infile, codes_ht);
-	encoded_huffman_tree_plus_leaves = encode_huffman_tree(huffman_tree);
-	make_output_file(encoded_file, encoded_huffman_tree_plus_leaves,outfilename);
+	encode_input_file(infilename, codes_ht, outfile_content);
+	encode_huffman_tree(huffman_tree, outfile_content);
+	outfile_content.write_content(string(infilename+".zp"));
 }
 
-unordered_map<char,int> encoder::gen_freq(ifstream & inputfile)
+unordered_map<char,int> encoder::gen_freq(const string & infilename)
 {
     unordered_map<char,int> freq_ht;
-	while(inputfile.good())
-		freq_ht[inputfile.get()]++;
+
+    ifstream infile(infilename);
+    if(!infile)
+    {
+        cerr<<"Error in openning file\n";
+        return freq_ht;
+    }
+	while(infile.good())
+    {
+        char ch = infile.get();
+        if(infile.good())
+            freq_ht[ch]++;
+    }
+    infile.close();
 	return freq_ht;
 }
 
@@ -46,7 +65,6 @@ pqueue<char> encoder::gen_pq(const unordered_map<char,int> & freq_ht)
 	{
 	    //pushing all the chars into pq - since each char corresponds to a node in the huffman tree, pq consists of a node pointer and freq
 	    //allocation should occur in pq.push
-
 		binary_tree_node<char> * leaf = new binary_tree_node<char>(i->first); //will be deleted in the destructor of huffman tree
         pq.push(i->second,leaf);
 	}
@@ -61,6 +79,15 @@ binary_tree_node<char>* encoder::build_huffman_tree(const unordered_map<char,int
     if(pq.isEmpty())
         return nullptr;
     pq_node<char> leftChild = pq.toppop();
+
+    //this is a special case, where the input file has only 1 char
+    //it's a special case because we need to make sure huffman tree, besides its root, has a leaf corresponding to the only char
+    if(pq.isEmpty())
+    {
+        binary_tree_node<char> * root = new binary_tree_node<char>;
+        root->setLeft(leftChild.getNode());
+        return root;
+    }
     //at each iteration: pop,push,pop: therefore size of pq decreases by 1
 	while(!pq.isEmpty())
 	{
@@ -81,11 +108,18 @@ void encoder::rec_preorder_gen_codes(const binary_tree_node<char> * p, string & 
 	}
 	else
 	{
-		s.push_back('0');
-		rec_preorder_gen_codes(p->getLeft(),s,codes_ht);
-		s[s.length()-1] = '1';
-		rec_preorder_gen_codes(p->getRight(),s,codes_ht);
-		s.erase(s.length()-1,1); //delete the last char
+	    if(p->getLeft())
+        {
+            s.push_back('0');
+            rec_preorder_gen_codes(p->getLeft(),s,codes_ht);
+            s.pop_back();
+        }
+        if(p->getRight())
+        {
+            s.push_back('1');
+            rec_preorder_gen_codes(p->getRight(),s,codes_ht);
+            s.pop_back();
+        }
 	}
 }
 
@@ -93,98 +127,64 @@ unordered_map<char,string> encoder::gen_codes(const binary_tree<char> & huffman_
 {
     unordered_map<char,string> codes_ht;
 	string s("");
-	rec_preorder_gen_codes(huffman_tree.getRoot(),s,codes_ht);
+	if(!huffman_tree.isEmpty())
+        rec_preorder_gen_codes(huffman_tree.getRoot(),s,codes_ht);
 	return codes_ht;
 }
 
-string encoder::encode_input_file(ifstream & infile, const unordered_map<char,string> & codes_ht)
+void encoder::encode_input_file(const string & infilename, const unordered_map<char,string> & codes_ht, file_content & outfile_content)
 {
-    string encoded_inputfile = "";
+    ifstream infile(infilename);
+    if(!infile)
+    {
+        cerr<<"Error in openning file\n";
+        return;
+    }
+    outfile_content.encoded_file = "";
 	while(infile.good())
 	{
 		char ch = infile.get();
-		encoded_inputfile.append(codes_ht.at(ch));
+		if(infile.good())
+            outfile_content.encoded_file.append(codes_ht.at(ch));
 	}
-	return encoded_inputfile;
+	outfile_content.encoded_filesize = outfile_content.encoded_file.length();
+	infile.close();
 }
 
-void encoder::rec_preorder_traversal_encode(binary_tree_node<char> * p, string & encoded_huffman_tree, string & leaves_left_right)
+void encoder::rec_preorder_traversal_encode(binary_tree_node<char> * p, file_content & outfile_content)
 {
 	if(!p->getLeft() && !p->getRight())
 	{
-		encoded_huffman_tree.append("00");
-		leaves_left_right.append(1,p->getData());
+		outfile_content.encoded_huffman_tree.append("00");
+		outfile_content.leaves.append(1,p->getData());
 	}
 	else
 	{
 		if(p->getLeft())
 		{
-			encoded_huffman_tree.append("1");
-			rec_preorder_traversal_encode(p->getLeft(), encoded_huffman_tree, leaves_left_right);
+			outfile_content.encoded_huffman_tree.append("1");
+			rec_preorder_traversal_encode(p->getLeft(), outfile_content);
 		}
+		else
+			outfile_content.encoded_huffman_tree.append("0");
 		if(p->getRight())
 		{
-			encoded_huffman_tree.append("1");
-			rec_preorder_traversal_encode(p->getRight(), encoded_huffman_tree, leaves_left_right);
+			outfile_content.encoded_huffman_tree.append("1");
+			rec_preorder_traversal_encode(p->getRight(), outfile_content);
 		}
+		else
+			outfile_content.encoded_huffman_tree.append("0");
 	}
 }
 
-pair<string,string> encoder::encode_huffman_tree(const binary_tree<char> & huffman_tree)
+void encoder::encode_huffman_tree(const binary_tree<char> & huffman_tree, file_content & outfile_content)
 {
-	string encoded_huffman_tree = "";
-	string leaves_left_right = "";
 	if(!huffman_tree.isEmpty())
-		rec_preorder_traversal_encode(huffman_tree.getRoot(), encoded_huffman_tree, leaves_left_right);
-	return pair<string,string>(encoded_huffman_tree,leaves_left_right);
-}
-
-unsigned char encoder::str01_to_char(const string::const_iterator & start, const string::const_iterator & end)
-{
-	unsigned char ch = 0x00;
-	uint8_t i=0x80;
-	int j=0;
-	while((start+j) != end)
-	{
-		if((*start) == '1')
-			ch = ch | i;
-		j++;
-		i = i >> 1;
-	}
-	return ch;
-}
-
-//the main job is to convert chars to bits. then output to file
-void encoder::make_output_file(const string & encoded_file, const pair<string,string> & encoded_huffman_tree_plus_leaves, const string & outfilename)
-{
-    ofstream outputfile(outfilename);
-    if(!outputfile)
     {
-        cerr<<"Error in creating the output file\n";
-        return;
+        outfile_content.encoded_huffman_tree = "1";
+		rec_preorder_traversal_encode(huffman_tree.getRoot(), outfile_content);
     }
-
-	size_t i=8;
-	while(i <= encoded_huffman_tree_plus_leaves.first.length())
-	{
-		outputfile << str01_to_char(encoded_huffman_tree_plus_leaves.first.cbegin()+i-8,encoded_huffman_tree_plus_leaves.first.cbegin()+i);
-		i+=8;
-	}
-	outputfile << str01_to_char(begin(encoded_huffman_tree_plus_leaves.first)+i-8,end(encoded_huffman_tree_plus_leaves.first));
-	outputfile << '*';
-
-	outputfile << encoded_huffman_tree_plus_leaves.second;
-	outputfile << '*';
-
-	i=8;
-	while(i <= encoded_file.length())
-	{
-		outputfile << str01_to_char(encoded_file.cbegin()+i-8,encoded_file.cbegin()+i);
-		i+=8;
-	}
-	outputfile << str01_to_char(encoded_file.cbegin()+i-8,encoded_file.cend());
-	outputfile.close();
+	outfile_content.huffman_tree_size = outfile_content.encoded_huffman_tree.length();
+	outfile_content.leaves_size = outfile_content.leaves.length();
 }
-
-
 

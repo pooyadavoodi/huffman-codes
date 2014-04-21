@@ -28,9 +28,21 @@ binary_tree_node<T> * binary_tree_node<T>::getLeft() const
 }
 
 template <class T>
+void binary_tree_node<T>::setLeft(binary_tree_node<T> * leftlink)
+{
+    this->left = leftlink;
+}
+
+template <class T>
 binary_tree_node<T> * binary_tree_node<T>::getRight() const
 {
     return this->right;
+}
+
+template <class T>
+void binary_tree_node<T>::setRight(binary_tree_node<T> * rightlink)
+{
+    this->right = rightlink;
 }
 
 template <class T>
@@ -48,10 +60,23 @@ void binary_tree_node<T>::setData(const T & x)
 template <class T>
 binary_tree<T>::binary_tree() {}
 
+template <class T>
+void binary_tree<T>::rec_destructor(binary_tree_node<T> * p)
+{
+    if(p)
+    {
+        rec_destructor(p->getLeft());
+        rec_destructor(p->getRight());
+        delete p;
+    }
+}
+
 //delete all the nodes
 template <class T>
 binary_tree<T>::~binary_tree()
 {
+    rec_destructor(this->getRoot());
+
 }
 
 template <class T>

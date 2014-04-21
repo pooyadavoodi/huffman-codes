@@ -23,7 +23,7 @@ binary_tree_node<T> * pq_node<T>::getNode() const
 template <class T>
 bool maximum<T>::operator()(const pq_node<T> & a, const pq_node<T> & b)
 {
-    if(a.getFreq() >= b.getFreq())
+    if(a.getFreq() <= b.getFreq())
         return true;
     return false;
 }
@@ -31,7 +31,7 @@ bool maximum<T>::operator()(const pq_node<T> & a, const pq_node<T> & b)
 template <class T>
 bool minimum<T>::operator()(const pq_node<T> & a, const pq_node<T> & b)
 {
-    if(a.getFreq() <= b.getFreq())
+    if(a.getFreq() >= b.getFreq())
         return true;
     return false;
 }
@@ -59,6 +59,12 @@ template <class T>
 bool pqueue<T>::isEmpty() const
 {
     return this->pq.empty();
+}
+
+template <class T>
+size_t pqueue<T>::size() const
+{
+    return this->pq.size();
 }
 
 template class pqueue<char>;
