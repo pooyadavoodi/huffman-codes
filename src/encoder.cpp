@@ -1,5 +1,5 @@
 #include <iostream>
-#include "encoder.h"
+#include "encoder.hpp"
 
 using namespace std;
 

@@ -1,5 +1,5 @@
 #include <assert.h>
-#include "decoder.h"
+#include "decoder.hpp"
 
 decoder::decoder() {}
 

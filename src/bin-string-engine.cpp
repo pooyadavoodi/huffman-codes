@@ -1,6 +1,6 @@
 #include <iostream>
 #include <assert.h>
-#include "bin-string-engine.h"
+#include "bin-string-engine.hpp"
 
 unsigned char bin_string_engine::str01_to_char(const string::const_iterator & strbegin, const string::const_iterator & strend)
 {

@@ -1,4 +1,4 @@
-#include "priority-queue.h"
+#include "priority-queue.hpp"
 
 
 template <class T>

@@ -1,9 +1,9 @@
-#include "file-content.h"
+#include "file-content.hpp"
 
 #include <fstream>
 #include <iostream>
 #include <assert.h>
-#include "bin-string-engine.h"
+#include "bin-string-engine.hpp"
 
 
 //read n chars from infile and return it as a string.

@@ -1,4 +1,4 @@
-#include "binary-tree.h"
+#include "binary-tree.hpp"
 
 template <class T>
 binary_tree_node<T>::binary_tree_node()

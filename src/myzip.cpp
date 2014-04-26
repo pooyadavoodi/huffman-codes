@@ -1,6 +1,6 @@
 #include <iostream>
-#include "encoder.h"
-#include "decoder.h"
+#include "encoder.hpp"
+#include "decoder.hpp"
 
 using namespace std;
 
