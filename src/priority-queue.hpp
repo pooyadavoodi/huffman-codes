@@ -6,6 +6,9 @@
 #include "binary-tree.hpp"
 #include <iostream>
 
+namespace huffman_comp
+{
+
 template <class T> class pqueue;
 
 template <class T>
@@ -50,5 +53,7 @@ class pqueue
         bool isEmpty() const;
         size_t size() const;
 };
+
+} // namespace huffman_comp
 
 #endif

@@ -1,49 +1,50 @@
 #include <iostream>
 #include "encoder.hpp"
 
-using namespace std;
+namespace huffman_comp
+{
 
 encoder::encoder() {}
 
-int streamSize(const string & infilename)
+int streamSize(const std::string & infilename)
 {
-    ifstream infile(infilename);
+    std::ifstream infile(infilename);
     if(!infile)
     {
-        cerr<<"Error in openning file\n";
+        std::cerr<<"Error in openning file\n";
         return -1;
     }
-    streampos fbegin = infile.tellg();
-    infile.seekg(0, ios::end);
-    streampos fend = infile.tellg();
+    std::streampos fbegin = infile.tellg();
+    infile.seekg(0, std::ios::end);
+    std::streampos fend = infile.tellg();
     infile.close();
     return fend - fbegin;
 }
 
 
-void encoder::compress(const string infilename)
+void encoder::compress(const std::string infilename)
 {
     file_content outfile_content;
-	unordered_map<char,int> freq_ht;
+	std::unordered_map<char,int> freq_ht;
     binary_tree<char> huffman_tree;
-	unordered_map<char,string> codes_ht;
+	std::unordered_map<char,std::string> codes_ht;
 
 	freq_ht = gen_freq(infilename);
     huffman_tree.setRoot(build_huffman_tree(freq_ht));
 	codes_ht = gen_codes(huffman_tree);
 	encode_input_file(infilename, codes_ht, outfile_content);
 	encode_huffman_tree(huffman_tree, outfile_content);
-	outfile_content.write_content(string(infilename+".zp"));
+	outfile_content.write_content(std::string(infilename+".zp"));
 }
 
-unordered_map<char,int> encoder::gen_freq(const string & infilename)
+std::unordered_map<char,int> encoder::gen_freq(const std::string & infilename)
 {
-    unordered_map<char,int> freq_ht;
+    std::unordered_map<char,int> freq_ht;
 
-    ifstream infile(infilename);
+    std::ifstream infile(infilename);
     if(!infile)
     {
-        cerr<<"Error in openning file\n";
+        std::cerr<<"Error in openning file\n";
         return freq_ht;
     }
 	while(infile.good())
@@ -56,7 +57,7 @@ unordered_map<char,int> encoder::gen_freq(const string & infilename)
 	return freq_ht;
 }
 
-pqueue<char> encoder::gen_pq(const unordered_map<char,int> & freq_ht)
+pqueue<char> encoder::gen_pq(const std::unordered_map<char,int> & freq_ht)
 {
     pqueue<char> pq;
 
@@ -71,7 +72,7 @@ pqueue<char> encoder::gen_pq(const unordered_map<char,int> & freq_ht)
 	return pq;
 }
 
-binary_tree_node<char>* encoder::build_huffman_tree(const unordered_map<char,int> & freq_ht)
+binary_tree_node<char>* encoder::build_huffman_tree(const std::unordered_map<char,int> & freq_ht)
 {
     //creat leaves and init pq: all the leaves can be accessed through pq
     pqueue<char> pq = gen_pq(freq_ht);
@@ -100,7 +101,7 @@ binary_tree_node<char>* encoder::build_huffman_tree(const unordered_map<char,int
     return leftChild.getNode();
 }
 
-void encoder::rec_preorder_gen_codes(const binary_tree_node<char> * p, string & s,unordered_map<char,string> & codes_ht)
+void encoder::rec_preorder_gen_codes(const binary_tree_node<char> * p, std::string & s,std::unordered_map<char,std::string> & codes_ht)
 {
 	if(!p->getLeft() && !p->getRight())
 	{
@@ -123,21 +124,21 @@ void encoder::rec_preorder_gen_codes(const binary_tree_node<char> * p, string & 
 	}
 }
 
-unordered_map<char,string> encoder::gen_codes(const binary_tree<char> & huffman_tree)
+std::unordered_map<char,std::string> encoder::gen_codes(const binary_tree<char> & huffman_tree)
 {
-    unordered_map<char,string> codes_ht;
-	string s("");
+    std::unordered_map<char,std::string> codes_ht;
+	std::string s("");
 	if(!huffman_tree.isEmpty())
         rec_preorder_gen_codes(huffman_tree.getRoot(),s,codes_ht);
 	return codes_ht;
 }
 
-void encoder::encode_input_file(const string & infilename, const unordered_map<char,string> & codes_ht, file_content & outfile_content)
+void encoder::encode_input_file(const std::string & infilename, const std::unordered_map<char,std::string> & codes_ht, file_content & outfile_content)
 {
-    ifstream infile(infilename);
+    std::ifstream infile(infilename);
     if(!infile)
     {
-        cerr<<"Error in openning file\n";
+        std::cerr<<"Error in openning file\n";
         return;
     }
     outfile_content.encoded_file = "";
@@ -187,4 +188,6 @@ void encoder::encode_huffman_tree(const binary_tree<char> & huffman_tree, file_c
 	outfile_content.huffman_tree_size = outfile_content.encoded_huffman_tree.length();
 	outfile_content.leaves_size = outfile_content.leaves.length();
 }
+
+} // namespace huffman_comp
 

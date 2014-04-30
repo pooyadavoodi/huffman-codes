@@ -1,14 +1,17 @@
 #include <assert.h>
 #include "decoder.hpp"
 
+namespace huffman_comp
+{
+
 decoder::decoder() {}
 
-void decoder::decompress(const string infilename)
+void decoder::decompress(const std::string infilename)
 {
     file_content infile_content;
     binary_tree<char> huffman_tree;
-	unordered_map<string,char> codes_ht;
-    string decoded_file;
+	std::unordered_map<std::string,char> codes_ht;
+    std::string decoded_file;
 
     infile_content.read_content(infilename);
     huffman_tree.setRoot(make_huffman_tree(infile_content.encoded_huffman_tree));
@@ -17,12 +20,12 @@ void decoder::decompress(const string infilename)
     //decode using the hash table
     decoded_file = decode_input_file(infile_content.encoded_file, infile_content.encoded_filesize, codes_ht);
     //write the decoded file
-    make_output_file(decoded_file, string (infilename+".unzp"));
+    make_output_file(decoded_file, std::string (infilename+".unzp"));
 }
 
 //make huffman tree by reading chars of encoded_huffman_tree
 //i denotes the position of the current char we are looking at in encoded_huffman_tree
-void decoder::rec_preorder_make_huffman_tree(binary_tree_node<char> * p, const string & encoded_huffman_tree, size_t & i)
+void decoder::rec_preorder_make_huffman_tree(binary_tree_node<char> * p, const std::string & encoded_huffman_tree, size_t & i)
 {
     if(i<encoded_huffman_tree.length())
     {
@@ -40,7 +43,7 @@ void decoder::rec_preorder_make_huffman_tree(binary_tree_node<char> * p, const s
     }
 }
 
-binary_tree_node<char> * decoder::make_huffman_tree(const string & encoded_huffman_tree)
+binary_tree_node<char> * decoder::make_huffman_tree(const std::string & encoded_huffman_tree)
 {
     binary_tree_node<char> * root;
 
@@ -57,7 +60,7 @@ binary_tree_node<char> * decoder::make_huffman_tree(const string & encoded_huffm
 }
 
 //traverse huffman_tree and when seeing a leaf, add a a (key,val) to codes_ht, where key: binary sequence from root-to-leaf, val: i-th entry in leaves
-void decoder::rec_preorder_make_codes_ht(binary_tree_node<char> * p, const string & leaves, size_t & i, string & s, unordered_map<string,char> & codes_ht)
+void decoder::rec_preorder_make_codes_ht(binary_tree_node<char> * p, const std::string & leaves, size_t & i, std::string & s, std::unordered_map<std::string,char> & codes_ht)
 {
     if(i<leaves.length())
     {
@@ -86,10 +89,10 @@ void decoder::rec_preorder_make_codes_ht(binary_tree_node<char> * p, const strin
 }
 
 //make hash table mapping codes to chars
-unordered_map<string,char> decoder::make_ht_codes(const binary_tree<char> & huffman_tree, const string & leaves)
+std::unordered_map<std::string,char> decoder::make_ht_codes(const binary_tree<char> & huffman_tree, const std::string & leaves)
 {
-    unordered_map<string,char> codes_ht;
-    string s("");
+    std::unordered_map<std::string,char> codes_ht;
+    std::string s("");
     size_t i = 0;
     if(!huffman_tree.isEmpty())
         rec_preorder_make_codes_ht(huffman_tree.getRoot(), leaves, i, s, codes_ht);
@@ -97,9 +100,9 @@ unordered_map<string,char> decoder::make_ht_codes(const binary_tree<char> & huff
 }
 
 //return the first code that starts at position i and exists in codes_ht
-string decoder::next_code(const string & encoded_file, size_t & i, const unordered_map<string,char> & codes_ht)
+std::string decoder::next_code(const std::string & encoded_file, size_t & i, const std::unordered_map<std::string,char> & codes_ht)
 {
-    string s("");
+    std::string s("");
     size_t j;
     for(j=i; j<encoded_file.length(); j++)
     {
@@ -113,9 +116,9 @@ string decoder::next_code(const string & encoded_file, size_t & i, const unorder
 }
 
 //decode using the hash table
-string decoder::decode_input_file(const string & encoded_file, size_t encoded_filesize, const unordered_map<string,char> & codes_ht)
+std::string decoder::decode_input_file(const std::string & encoded_file, size_t encoded_filesize, const std::unordered_map<std::string,char> & codes_ht)
 {
-    string decoded_file("");
+    std::string decoded_file("");
 
     //loop over all the codes
     size_t i=0;
@@ -125,12 +128,12 @@ string decoder::decode_input_file(const string & encoded_file, size_t encoded_fi
 }
 
 //write the decoded file
-void decoder::make_output_file(const string & decoded_file, const string outfilename)
+void decoder::make_output_file(const std::string & decoded_file, const std::string outfilename)
 {
-    ofstream outputfile(outfilename);
+    std::ofstream outputfile(outfilename);
     if(!outputfile)
     {
-        cerr<<"Error in creating the output file\n";
+        std::cerr<<"Error in creating the output file\n";
         return;
     }
 
@@ -140,6 +143,7 @@ void decoder::make_output_file(const string & decoded_file, const string outfile
 }
 
 
+} // namespace huffman_comp
 
 
 

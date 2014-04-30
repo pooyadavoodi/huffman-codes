@@ -1,5 +1,8 @@
 #include "binary-tree.hpp"
 
+namespace huffman_comp
+{
+
 template <class T>
 binary_tree_node<T>::binary_tree_node()
 {
@@ -101,4 +104,4 @@ bool binary_tree<T>::isEmpty() const
 template class binary_tree_node<char>;
 template class binary_tree<char>;
 
-
+} // namespace huffman_comp

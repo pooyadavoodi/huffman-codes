@@ -1,6 +1,9 @@
 #ifndef _BINARYTREE_HPP_
 #define _BINARYTREE_HPP_
 
+namespace huffman_comp
+{
+
 template <class T> class binary_tree;
 
 template <class T>
@@ -41,5 +44,7 @@ class binary_tree
 //    friend class encoder;
 //    friend class decoder;
 };
+
+} // namespace huffman_comp
 
 #endif

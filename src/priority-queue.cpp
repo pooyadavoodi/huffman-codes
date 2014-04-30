@@ -1,5 +1,7 @@
 #include "priority-queue.hpp"
 
+namespace huffman_comp
+{
 
 template <class T>
 pq_node<T>::pq_node(int x, binary_tree_node<T> * p)
@@ -72,5 +74,6 @@ template class pq_node<char>;
 template class minimum<char>;
 template class maximum<char>;
 
+} // namespace huffman_comp
 
 

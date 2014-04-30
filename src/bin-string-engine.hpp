@@ -3,16 +3,20 @@
 
 #include <string>
 
-using namespace std;
+namespace huffman_comp
+{
 
 class bin_string_engine
 {
 public:
-    static unsigned char str01_to_char(const string::const_iterator &, const string::const_iterator &);
-    static string char_to_str01(const unsigned char, size_t);
+    static unsigned char str01_to_char(const std::string::const_iterator &, const std::string::const_iterator &);
+    static std::string char_to_str01(const unsigned char, size_t);
 public:
-    static string compress(const string);
-    static string decompress(const string, size_t);
+    static std::string compress(const std::string);
+    static std::string decompress(const std::string, size_t);
 };
 
 #endif // _BIN_STRING_ENGINE_HPP
+
+
+} // namespace huffman_comp

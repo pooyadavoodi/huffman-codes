@@ -2,33 +2,31 @@
 #include "encoder.hpp"
 #include "decoder.hpp"
 
-using namespace std;
-
 int main(int argc, char * argv[])
 {
 	if(argc == 2)
 	{
-		cout<<"compressing...\n";
-		encoder e;
+		std::cout<<"compressing...\n";
+		huffman_comp::encoder e;
 		e.compress(argv[1]);
-		cout<<"Done!\n";
+		std::cout<<"Done!\n";
 		return 0;
 	}
 	else if(argc == 3)
 	{
-	    if(string(argv[1]).compare("-d") != 0)
+	    if(std::string(argv[1]).compare("-d") != 0)
 	    {
-	        cerr<<"Error in arguments\n";
+	        std::cerr<<"Error in arguments\n";
 	        return 1;
 	    }
-		cout<<"Decompressing...\n";
-		decoder d;
+		std::cout<<"Decompressing...\n";
+		huffman_comp::decoder d;
 		d.decompress(argv[2]);
-		cout<<"Done!\n";
+		std::cout<<"Done!\n";
 		return 0;
 	}
 	//error in arguments
-    cerr<<"no\n";
+    std::cerr<<"no\n";
 	return 1;
 }
 
